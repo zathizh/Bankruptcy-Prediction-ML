@@ -84,7 +84,8 @@ public final class CsvToVectors {
             reader.close();
         }
     }
-
+    
+    // Processing words  
     // Not sure how scalable this is going to be
     protected double processString(String data) {
         Long theLong = words.get(data);
@@ -95,6 +96,7 @@ public final class CsvToVectors {
         return theLong;
     }
 /*
+    // Processing numerics
     protected double processNumeric(String data) {
         Double d = Double.NaN;
         if (isNumeric(data)) {
@@ -104,6 +106,7 @@ public final class CsvToVectors {
         return d;
     }
 
+    Process booleans
     public static boolean isNumeric(String str) {
         NumberFormat formatter = NumberFormat.getInstance();
         ParsePosition parsePosition = new ParsePosition(0);

@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
  * @author sathish
  */
 public final class MahoutTest {
+    
+    // Attributes 
     private static final Logger logger = LoggerFactory.getLogger(MahoutTest.class);
     
     private static final String sequenceFile = "seq/part-0000";
@@ -48,10 +50,12 @@ public final class MahoutTest {
 
         fs.delete(seqFilePath, true);
 
+        // Create sequence file
         SequenceFile.Writer writer = new SequenceFile.Writer(fs, conf, seqFilePath, Text.class, VectorWritable.class);
-
+        
         String csvPath = inputDataPath;
 
+        // Vectorize the csv informations
         try {
             CsvToVectors csvToVectors = new CsvToVectors(csvPath);
             List<MahoutVector> vectors = csvToVectors.vectorize();
@@ -76,6 +80,8 @@ public final class MahoutTest {
         fs.delete(new Path(modelDirectory), true);
         fs.delete(new Path(labelIndexDirectory), true);
         
+        
+        // Train the algorithm
         trainNaiveBayes.run(new String[]{"--input", sequenceFile, "--output", modelDirectory, "--tempDir", labelIndexDirectory, "--overwrite", "-el"});
         
     }
@@ -85,6 +91,8 @@ public final class MahoutTest {
    
         // Train the classifier
         NaiveBayesModel naiveBayesModel = NaiveBayesModel.materialize(new Path(modelDirectory), conf);
+       
+        // Print classifier details
         System.out.println();
         System.out.print("    ");
         System.out.print("Features: " + (int) naiveBayesModel.numFeatures());
@@ -101,9 +109,10 @@ public final class MahoutTest {
                 
         int total = 0;
         int success = 0;
-        
+        // Printing header
         System.out.println("\tAnomaly\t\t\t" + "Normal\t\t\t" + "Classified\t" + "Class");
         System.out.println("-------------------------------------------------------------------------------------");
+        // Classify results
         for (MahoutVector mahoutVector : vectors){
             Vector prediction = classifier.classifyFull(mahoutVector.vector);
             
@@ -115,7 +124,7 @@ public final class MahoutTest {
             if (normal > anomaly) {
                 predictedClass = "B";
             }
-            
+            // Printing predictions
             System.out.print("\t");
             System.out.print(String.format("%.15f", anomaly));
             System.out.print("\t");
@@ -125,10 +134,14 @@ public final class MahoutTest {
             
 	    if (predictedClass.equals(mahoutVector.classifier))
 	    {
+                // counting success predictions
                 success++;
 	    }
+            // counting total predictions 
 	    total ++;
         }
+        
+        // Printing output
         System.out.println("-------------------------------------------------------------------------------------");
         System.out.println();
         System.out.print("    ");
@@ -139,7 +152,7 @@ public final class MahoutTest {
     }
     
     public static void main(String[] args) throws Throwable {
-        
+        // handle command line arguments
         Options options = new Options();
 
         Option input = new Option("i", "input", true, "input data set");
@@ -166,8 +179,12 @@ public final class MahoutTest {
         String inputDataPath = cmd.getOptionValue("input");
         String trainDataPath = cmd.getOptionValue("train");
         
+        
+        // calling sequencer and create sequence file
         sequencer(inputDataPath);
+        // train the algorithm
         train();
+        // predicting the output
         predict(trainDataPath);
     }
 }
